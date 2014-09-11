@@ -1,0 +1,36 @@
+function onOpen() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet();
+  var entries = [{name : "Check Day 1 Duplicates",functionName : "Day1"},
+                {name : "Check Day 2 Duplicates",functionName : "Day2"},
+                {name : "Check Day 3 Duplicates",functionName : "Day3"},
+                null,
+                {name : "Check E Masterlist for Duplicates",functionName : "MasterList"},
+                {name : "Check Roster for No Shows",functionName :"checkRosterForCheckedIn"},
+                ];
+  sheet.addMenu("Scripts", entries);
+};
+
+function Day1() {
+ var rangeName = "Day1Shifts";
+ var sheetName = "Roster" 
+ checkDuplicates(sheetName, rangeName);                  
+}                 
+                 
+function Day2() {
+ var rangeName = "Day2Shifts";    
+ var sheetName = "Roster" 
+ checkDuplicates(sheetName, rangeName) ;                 
+}                 
+                 
+function Day3() {
+ var rangeName = "Day3Shifts";   
+ var sheetName = "Roster" 
+ checkDuplicates(sheetName, rangeName);                  
+}                 
+ 
+function MasterList() {
+ var rangeName = "Enforcers"; 
+ var sheetName = "EMasterList" 
+ checkDuplicates(sheetName, rangeName);                  
+}                 
+                    
