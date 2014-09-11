@@ -1,0 +1,38 @@
+function checkDuplicates(selectedSheet, selectedRange) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var currentSheet = ss.getSheetByName(selectedSheet); 
+  // var range = currentSheet.getRange("Roster!Day1Shifts");   // This one works |Kwaizy              
+  var range = currentSheet.getRange(selectedRange); // Set Any Range
+  // "A:A" is for Column A
+  // And if you want to check duplicates for whole sheet then try this:
+  // var dataRange = sheet.getDataRange();
+  var data = range.getValues();
+  var numRows = data.length;
+  var numColumns = data[0].length;
+
+  var formats = [];
+  var values = [];
+  for (var i = 0; i < numRows; i++) {
+    formats[i] = [];
+    for (var j = 0; j < numColumns; j++) {
+      formats[i][j] = 'WHITE';
+      if (data[i][j] != '') {
+        values.push([data[i][j], i, j]);
+      }
+    }
+  }
+  var numValues = values.length;
+  
+  for (var k = 0 ; k < numValues - 1; k++) {
+    if (formats[values[k][1]][values[k][2]] == 'WHITE') {
+      for (var l = k + 1; l < numValues; l++) {
+        if (values[k][0] == values[l][0]) {
+          formats[values[k][1]][values[k][2]] = 'RED';
+          formats[values[l][1]][values[l][2]] = 'RED';
+        }
+      }
+    }
+  }
+    
+  range.setBackgroundColors(formats);
+}
