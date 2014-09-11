@@ -1,0 +1,74 @@
+function checkRosterForCheckedIn()  {
+	// define sheet names
+	var rosterName = "Roster";
+	var eName = "EMasterList";
+	
+	//Define Range Names
+	var wholeRosterRange = "wholeRoster";
+	var enforcerRange = "Enforcers";
+	
+	// set the spreadsheet to var "ss"
+	var ss = SpreadsheetApp.getActiveSpreadsheet();
+	
+	// set the roster sheet and range 
+	var rosterSheet = ss.getSheetByName(rosterName); 
+	var rosterRange = rosterSheet.getRange(wholeRosterRange); 
+	
+	// set the Enforcer sheet and range
+	var eSheet = ss.getSheetByName(eName);
+    var eCheckedInRange = eSheet.getRange("A:B");
+	
+	// set "dataRoster" to all the data in the roster and set the size of the roster
+ 	var dataRoster = rosterRange.getValues();
+	var rosterNumRows = dataRoster.length;
+	var rosterNumColumns = dataRoster[0].length;
+	
+	// set aray variables
+	var formats = [];
+	// var values = [];
+    var notCheckedIn = [];
+    var eRosteredOn = [];
+
+	// Get handles and CheckedIn Yes/No
+	var dataCheckedIn = eCheckedInRange.getValues();
+	var checkedInNumRows = dataCheckedIn.length;
+    var checkedInColumns = dataCheckedIn[0].length;
+  
+  	
+	//  Now we get all of the people who aren't CheckedIn
+  for (var i = 1; i < checkedInNumRows; i++) {
+    if (dataCheckedIn[i][1] == "No") {
+      notCheckedIn.push(dataCheckedIn[i][0]);
+    }
+  }
+  	
+  // Get list of E that are rostered on
+  for (var x = 0; x < rosterNumRows; x++) {
+        for (var y = 0; y < rosterNumColumns; y++) {
+          if (dataRoster[x][y] != '') {
+            eRosteredOn.push([dataRoster[x][y], x, y]);
+          }
+        }
+  }
+              
+  //Set all text to Black
+  
+  for (var a = 0; a < rosterNumRows; a++) {
+    formats[a] = [];
+    for (var b = 0; b < rosterNumColumns; b++) {
+      formats[a][b] = 'BLACK';
+    }
+  }
+  
+  // Compair Roster with E Not Checked in        
+  for (var j = 0; j < eRosteredOn.length; j++) {
+    for (var k = 0; k < notCheckedIn.length; k++) {
+      if (eRosteredOn[j][0] == notCheckedIn[k]) {
+        formats[eRosteredOn[j][1]][eRosteredOn[j][2]] = 'RED';
+      }
+    }
+  }
+
+rosterRange.setFontColors(formats);
+
+}
