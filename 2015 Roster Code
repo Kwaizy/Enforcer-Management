@@ -1,0 +1,334 @@
+function onOpen() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet();
+  var entries = [{name : "Check Day 1 Duplicates",functionName : "Day1"},
+                {name : "Check Day 2 Duplicates",functionName : "Day2"},
+                {name : "Check Day 3 Duplicates",functionName : "Day3"},
+                null,
+                {name : "Check E Masterlist for Duplicates",functionName : "MasterList"},
+                {name : "Check Roster for No Shows",functionName :"checkRosterForCheckedIn"},
+                {name : "Check Department Allocation",functionName :"searchDepartmentAssigned"},
+                ];
+  sheet.addMenu("Scripts", entries);
+};
+
+function Day1() {
+ var rangeName = "Friday";
+ var sheetName = "Roster" 
+ checkDuplicates(sheetName, rangeName);                  
+}                 
+                 
+function Day2() {
+ var rangeName = "Saturday";    
+ var sheetName = "Roster" 
+ checkDuplicates(sheetName, rangeName) ;                 
+}                 
+                 
+function Day3() {
+ var rangeName = "Sunday";   
+ var sheetName = "Roster" 
+ checkDuplicates(sheetName, rangeName);                  
+}                 
+ 
+function MasterList() {
+ var rangeName = "Enforcers"; 
+ var sheetName = "Preferences & Check In" 
+ checkDuplicates(sheetName, rangeName);                  
+}                 
+                               
+                 
+                 
+                 
+function checkDuplicates(selectedSheet, selectedRange) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var currentSheet = ss.getSheetByName(selectedSheet); 
+  // var range = currentSheet.getRange("Roster!Day1Shifts");   // This one works |Kwaizy              
+  var range = currentSheet.getRange(selectedRange); // Set Any Range
+  // "A:A" is for Column A
+  // And if you want to check duplicates for whole sheet then try this:
+  // var dataRange = sheet.getDataRange();
+  var data = range.getValues();
+  var numRows = data.length;
+  var numColumns = data[0].length;
+
+  var formats = [];
+  var values = [];
+  for (var i = 0; i < numRows; i++) {
+    formats[i] = [];
+    for (var j = 0; j < numColumns; j++) {
+      formats[i][j] = 'WHITE';
+      if (data[i][j] != '') {
+        values.push([data[i][j], i, j]);
+      }
+    }
+  }
+  var numValues = values.length;
+  
+  for (var k = 0 ; k < numValues - 1; k++) {
+    if (formats[values[k][1]][values[k][2]] == 'WHITE') {
+      for (var l = k + 1; l < numValues; l++) {
+        if (values[k][0] == values[l][0]) {
+          formats[values[k][1]][values[k][2]] = 'RED';
+          formats[values[l][1]][values[l][2]] = 'RED';
+        }
+      }
+    }
+  }
+    
+  range.setFontColors(formats);
+}
+
+function checkRosterForCheckedIn()  {
+	// define sheet names
+	var rosterName = "Roster";
+	var eName = "Check In";
+	
+	//Define Range Names
+	var wholeRosterRange = "wholeRoster";
+	var enforcerRange = "Enforcers";
+	
+	// set the spreadsheet to var "ss"
+	var ss = SpreadsheetApp.getActiveSpreadsheet();
+	
+	// set the roster sheet and range 
+	var rosterSheet = ss.getSheetByName(rosterName); 
+	var rosterRange = rosterSheet.getRange(wholeRosterRange); 
+	
+	// set the Enforcer sheet and range
+	var eSheet = ss.getSheetByName(eName);
+    var eCheckedInRange = eSheet.getRange("A:B");
+	
+	// set "dataRoster" to all the data in the roster and set the size of the roster
+ 	var dataRoster = rosterRange.getValues();
+	var rosterNumRows = dataRoster.length;
+	var rosterNumColumns = dataRoster[0].length;
+	
+	// set aray variables
+	var formats = [];
+	// var values = [];
+    var notCheckedIn = [];
+    var eRosteredOn = [];
+
+	// Get handles and CheckedIn Yes/No
+	var dataCheckedIn = eCheckedInRange.getValues();
+	var checkedInNumRows = dataCheckedIn.length;
+    var checkedInColumns = dataCheckedIn[0].length;
+  
+  	
+	//  Now we get all of the people who aren't CheckedIn
+  for (var i = 1; i < checkedInNumRows; i++) {
+    if (dataCheckedIn[i][1] == "No") {
+      notCheckedIn.push(dataCheckedIn[i][0]);
+    }
+  }
+  	
+  // Get list of E that are rostered on
+  for (var x = 0; x < rosterNumRows; x++) {
+        for (var y = 0; y < rosterNumColumns; y++) {
+          if (dataRoster[x][y] != '') {
+            eRosteredOn.push([dataRoster[x][y], x, y]);
+          }
+        }
+  }
+              
+  //Set all text to Black
+  
+  for (var a = 0; a < rosterNumRows; a++) {
+    formats[a] = [];
+    for (var b = 0; b < rosterNumColumns; b++) {
+      formats[a][b] = 'BLACK';
+    }
+  }
+  
+  // Compair Roster with E Not Checked in        
+  for (var j = 0; j < eRosteredOn.length; j++) {
+    for (var k = 0; k < notCheckedIn.length; k++) {
+      if (eRosteredOn[j][0].toLowerCase() == notCheckedIn[k].toLowerCase()) {
+        formats[eRosteredOn[j][1]][eRosteredOn[j][2]] = 'RED';
+      }
+    }
+  }
+
+rosterRange.setFontColors(formats);
+
+}
+
+
+function findColumn(EnforcerHandle, SelectedRange) {
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var currentSheet = ss.getSheetByName("Roster"); 
+  // var range = currentSheet.getRange("Roster!Day1Shifts");   // This one works |Kwaizy              
+  var range = currentSheet.getRange(SelectedRange); // Set Any Range
+  // "A:A" is for Column A
+  // And if you want to check duplicates for whole sheet then try this:
+  // var dataRange = sheet.getDataRange();
+  var data = range.getValues();
+  var numRows = data.length;
+  var numColumns = data[0].length;
+  var DepartmentColumn;
+  var RowNumber;
+  var ShiftTime;
+  var x;
+  var y;
+    for ( x = 0; x < numRows; x++) {
+        for ( y = 0; y < numColumns; y++) {
+          if (data[x][y].toLowerCase() == EnforcerHandle.toLowerCase()) {
+            DepartmentColumn  = y;
+            RowNumber = x;
+            x = numRows;
+            y = numColumns;
+          }
+        }
+    }
+  switch (DepartmentColumn) {
+    case 0:
+      var DepartmentName = "Expo Hall";
+      break;
+    case 1:
+      var DepartmentName = "Enforcer Welfare";
+        break;
+    case 2:
+      var DepartmentName = "Main Theatre";
+        break;
+    case 3:
+      var DepartmentName = "Wombat Theatre";
+        break;
+    case 4:
+      var DepartmentName = "Dropbear Theatre";
+        break;
+    case 5:
+      var DepartmentName = "Kookaburra Theatre";
+        break;
+    case 6:
+      var DepartmentName = "Galah Theatre";
+        break;
+    case 7:
+      var DepartmentName = "Fruitbat Theatre";
+        break;
+    case 8:
+      var DepartmentName = "Pass Check";
+        break;
+    case 9:
+      var DepartmentName = "Console Freeplay";
+        break;
+    case 10:
+      var DepartmentName = "Console Tourney";
+        break;
+    case 11:
+      var DepartmentName = "Classic Console";
+        break;
+    case 12:
+      var DepartmentName = "PC Freeplay";
+        break;
+    case 13:
+      var DepartmentName = "PC Tourney";
+      break;
+    case 14:
+      var DepartmentName = "BYOC";
+        break;
+    case 15:
+      var DepartmentName = "Joust";
+        break;
+    case 16:
+      var DepartmentName = "Pinball";
+        break;
+    case 17:
+      var DepartmentName = "Merch Booth";
+        break;
+    case 18:
+      var DepartmentName = "TableTop";
+        break;
+    case 19:
+      var DepartmentName = "Handheld";
+        break;
+    case 20:
+      var DepartmentName = "Line Management";
+        break;
+    case 21:
+      var DepartmentName = "Registration";
+        break;
+    case 22:
+      var DepartmentName = "Infobooth";
+        break;
+    case 23:
+      var DepartmentName = "Goat Check";
+        break;
+    case 24:
+      var DepartmentName = "VIP Assistance";
+        break;
+    case 25:
+      var DepartmentName = "Spareboard";
+        break;
+    case 26:
+      var DepartmentName = "Diversity Lounge";
+        break;
+    case 27:
+      var DepartmentName = "PAX Promenade";
+        break;
+    case 28:
+      var DepartmentName = "Line Entertainment";
+        break;
+     case 29:
+      var DepartmentName = "AFK";
+        break;  
+    case 30:
+      var DepartmentName = "Security";
+        break;
+    case 31:
+      var DepartmentName = "Lieutenants";
+        break;
+    default:
+      var DepartmentName = "Not Assigned";
+  };
+  if (RowNumber >= 0 && RowNumber <= 40)
+  { 
+     ShiftTime = "Morning";
+  }
+  else if (RowNumber >= 42 && RowNumber <= 82)
+  {
+     ShiftTime = "Afternoon"
+  }
+  else if(RowNumber >= 84 && RowNumber <= 104)
+  {
+     ShiftTime = "Evening"
+  }
+  return DepartmentName + " " + ShiftTime;
+}
+
+
+
+function searchDepartmentAssigned()  {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var currentSheet = ss.getSheetByName("Preferences & Check In"); 
+  var dataRange = currentSheet.getDataRange();
+  var handleRange = currentSheet.getRange("RawEnfrocers");
+  var handles = handleRange.getValues();
+  var numRows = handles.length;
+  // "A:A" is for Column A
+  // And if you want to check duplicates for whole sheet then try this:
+  // var dataRange = sheet.getDataRange();
+  //var data = range.getValues();
+  for (var x = 1; x < numRows; x++) {
+    y = x +1;
+    var handle = handles[x][0];
+    var departName = findColumn(handle, "Friday");
+    var writeCell = "M" + y ;
+    var cell = currentSheet.getRange(writeCell);
+    cell.setValue(departName);
+    var departName = findColumn(handle, "Saturday");
+    var writeCell = "N" + y ;
+    var cell = currentSheet.getRange(writeCell);
+    cell.setValue(departName);
+    var departName = findColumn(handle, "Sunday");
+    var writeCell = "O" + y ;
+    var cell = currentSheet.getRange(writeCell);
+    cell.setValue(departName);
+  }
+}
+
+  
+  
+  
+
+          
+       
